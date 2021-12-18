@@ -12,7 +12,7 @@ using Test1.Model;
 
 namespace Test1
 {
-    public partial class AjaxProcess : System.Web.UI.Page
+    public partial class AjaxProcess : Page
     {
         private int currentPageIndex;
 
@@ -55,6 +55,8 @@ namespace Test1
 
             if (method.Equals("DeleteUser"))
             {
+               var x =  HttpContext.Current.Request.Form["someData"];
+
                 var sr = new StreamReader(Request.InputStream);
                 var jsonObject = JObject.Parse(sr.ReadLine());
 

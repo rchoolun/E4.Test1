@@ -60,34 +60,37 @@
             dialog.open('Edit User');
         }
         function Save() {
+            var record = {
+                ID: $('#ID').val(),
+                Name: $('#Name').val(),
+                CountryID: nationalityDropdown.value(),
+                DateOfBirth: gj.core.parseDate(dateOfBirth.value(), 'mm/dd/yyyy').toISOString(),
+                IsActive: $('#IsActive').prop('checked')
+            };
 
-            $.ajax({
-                type: "POST",
-                async: false,
-                url: "AjaxProcess.aspx?method=CreateUser",
-                contentType: 'application/json; charset=utf-8',
-                data: "{Id:'" + $('#Id').val() + "'Name:'" + $('#Name').val() + "',Surname:'" + $('#Surname').val() + "',Phone:'" + $('#Phone').val() + "'}",
-                dataType: "json",
-                success: function (result) {
-                    alert(result);
+            $.ajax({ url: 'AjaxProcess.aspx?method=CreateUser', data: { record: record }, method: 'POST' })
+                .done(function () {
                     dialog.close();
                     grid.reload();
-                },
-                error: function (msg) { alert(msg); dialog.close();}
-            });
+                })
+                .fail(function (msg) {
+                    alert(msg);
+                    dialog.close();
+                });
         }
 
         function Delete(e) {
             if (confirm('Are you sure?')) {
-                $.ajax({ url: 'AjaxProcess.aspx?method=DeleteUser', data: { Id: e.data.id }, method: 'POST' })
+                $.ajax({ url: 'AjaxProcess.aspx?method=DeleteUser', data: { id: e.data.id }, method: 'POST' })
                     .done(function () {
                         grid.reload();
                     })
-                    .fail(function () {
-                        alert('Failed to delete.');
+                    .fail(function (msg) {
+                        alert(msg);
                     });
             }
         }
+
         $(document).ready(function () {
             grid = $('#grid').grid({
                 primaryKey: 'Id',
@@ -120,7 +123,7 @@
                 dialog.close();
             });
             $('#btnSearch').on('click', function () {
-                grid.reload({ page: 1, name: $('#Name').val(), nationality: $('#Surname').val() });
+                grid.reload({ page: 1, name: $('#Name').val(), surname: $('#Surname').val() });
             });
             $('#btnClear').on('click', function () {
                 $('#Name').val('');
