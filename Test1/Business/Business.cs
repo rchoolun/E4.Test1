@@ -54,7 +54,7 @@ namespace Test1.Business
                 XEle.SetAttribute("Surname", newUser.Surname);
                 XEle.SetAttribute("Phone", newUser.Phone);
                 data.DocumentElement.AppendChild(XEle.Clone());
-                data.Save("App_Data/Data.xml");
+                data.Save(ConfigurationManager.AppSettings["Datasource"]);
 
                 return new Status { IsSuccess = true };
             }
@@ -81,7 +81,7 @@ namespace Test1.Business
                     nodeToUpdate.Attributes["Surname"].Value = userToUpdate.Surname;
                     nodeToUpdate.Attributes["Phone"].Value = userToUpdate.Phone;
                 }
-                data.Save("App_Data/Data.xml");
+                data.Save(ConfigurationManager.AppSettings["Datasource"]);
 
                 return new Status { IsSuccess = true };
             }
@@ -107,7 +107,7 @@ namespace Test1.Business
                 {
                     nodeToDelete.ParentNode.RemoveChild(nodeToDelete);
                 }
-                data.Save("App_Data/Data.xml");
+                data.Save(ConfigurationManager.AppSettings["Datasource"]);
 
                 return new Status { IsSuccess = true };
             }

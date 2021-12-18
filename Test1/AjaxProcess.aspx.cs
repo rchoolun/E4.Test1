@@ -1,88 +1,31 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.Services;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Test1.Model;
 
 namespace Test1
 {
     public partial class AjaxProcess : Page
     {
-        private int currentPageIndex;
-
-        private string order = string.Empty;
-
-        private string orderBy = string.Empty;
-
-        private int limit;
-
-        private string sort = string.Empty;
-
         protected void Page_Load(object sender, EventArgs e)
         {
             var method = HttpContext.Current.Request["method"];
 
-            currentPageIndex = (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["page"])) ? Convert.ToInt32(HttpContext.Current.Request.Form["page"]) : 1;
-            limit = (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["limit"])) ? Convert.ToInt32(HttpContext.Current.Request.Form["limit"]) : 10;
-            sort = (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["sortorder"])) ? HttpContext.Current.Request.Form["sortorder"] : "";
-            order = (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["sortname"])) ? HttpContext.Current.Request.Form["sortname"] : "";
-            orderBy = string.Concat(order, "_", sort);
-
-            if (method.Equals("GetAllUsers"))
+            if(method != null)
             {
-                GetUsers();
-            }
-
-            if (method.Equals("CreateUser"))
-            {
-                var sr = new StreamReader(Request.InputStream);
-                var jsonObject = JObject.Parse(sr.ReadLine());
-
-                var name = jsonObject["Name"].ToString();
-                var surname = jsonObject["Surname"].ToString();
-                var phone = jsonObject["Phone"].ToString();
-
-                var newUser = new User { Id = Guid.NewGuid(), Name = name, Surname = surname, Phone = phone };
-
-                Response.Write(JsonConvert.SerializeObject(CreateUser(newUser)));
-            }
-
-            if (method.Equals("DeleteUser"))
-            {
-               var x =  HttpContext.Current.Request.Form["someData"];
-
-                var sr = new StreamReader(Request.InputStream);
-                var jsonObject = JObject.Parse(sr.ReadLine());
-
-                var id = jsonObject["Id"].ToString();
-
-                Response.Write(JsonConvert.SerializeObject(DeleteUser(id)));
-            }
-
-            if (method.Equals("UpdateUser"))
-            {
-                var sr = new StreamReader(Request.InputStream);
-                var jsonObject = JObject.Parse(sr.ReadLine());
-
-                var id = jsonObject["Id"].ToString();
-                var name = jsonObject["Name"].ToString();
-                var surname = jsonObject["Surname"].ToString();
-                var phone = jsonObject["Phone"].ToString();
-
-                var newUser = new User { Id = new Guid(id), Name = name, Surname = surname, Phone = phone };
-
-                Response.Write(JsonConvert.SerializeObject(UpdateUser(newUser)));
-            }
+                if (method.Equals("GetAllUsers"))
+                {
+                    GetUsers();
+                }
+            }          
         }
 
         /// <summary>
-        /// Get all users in the XML file
+        /// Gets all users from the XML file
         /// </summary>
         protected void GetUsers()
         {
@@ -94,40 +37,73 @@ namespace Test1
             //Select the require token from the JSON 
             var obj = JObject.Parse(users);
             var json = obj.SelectToken("Users");
-            
+
             Response.ContentType = "application/json";
             Response.Write(json);
         }
 
+
+        [WebMethod]
         /// <summary>
-        /// Adds a new user in the XML file
+        /// Update/Add the required user
         /// </summary>
-        /// <param name="offerId"></param>
-        /// <param name="isBlank"></param>
-        /// <param name="value"></param>
         /// <returns></returns>
-        protected string CreateUser(User newUser)
+        public static string SaveUser(string Id, string Name, string Surname, string Phone)
         {
+            //User validation
+            if(string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Surname) || string.IsNullOrEmpty(Phone))
+            {
+                return "Please make sure all the information are filled IN";
+            }
+
+            if (!Regex.Match(Name, "^[A-Z][a-zA-Z]*$").Success)
+            {
+                return "Name is incorrect";
+            }
+
+            if (!Regex.Match(Surname, "^[A-Z][a-zA-Z]*$").Success)
+            {
+                return "Surname is incorrect";
+            }
+
+            if (!Regex.Match(Phone, "^[0-9]*$").Success)
+            {
+                return "Phone number is incorrect";
+            }
+
+            User user;
             var business = new Business.Business();
 
-            var status = business.AddUser(newUser);
+            Status status;
 
-            if(status.IsSuccess)
+            if (string.IsNullOrEmpty(Id))
             {
-                return "The user has been added successfully";
+                user = new User { Id = Guid.NewGuid(), Name = Name, Surname = Surname, Phone = Phone };
+
+                status = business.AddUser(user);
+            }
+            else
+            {
+                user = new User { Id = new Guid(Id), Name = Name, Surname = Surname, Phone = Phone };
+
+                status = business.UpdateUser(user);
+            }
+
+            if (status.IsSuccess)
+            {
+                return "The user data has been updated successfully";
             }
 
             return status.Message;
         }
 
         /// <summary>
-        /// Adds a new user in the XML file
+        /// Deletes the user from XML
         /// </summary>
-        /// <param name="offerId"></param>
-        /// <param name="isBlank"></param>
-        /// <param name="value"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        protected string DeleteUser(string Id)
+        [WebMethod]
+        public static string DeleteUser(string Id)
         {
             var business = new Business.Business();
 
@@ -136,24 +112,6 @@ namespace Test1
             if (status.IsSuccess)
             {
                 return "The user has been deleted successfully";
-            }
-
-            return status.Message;
-        }
-
-        /// <summary>
-        /// Update the required user
-        /// </summary>
-        /// <returns></returns>
-        protected string UpdateUser(User newUser)
-        {
-            var business = new Business.Business();
-
-            var status = business.UpdateUser(newUser);
-
-            if (status.IsSuccess)
-            {
-                return "The user has been updated successfully";
             }
 
             return status.Message;

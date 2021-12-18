@@ -42,7 +42,7 @@
                 <input type="text" class="gj-textbox-md" id="Surname" placeholder="Surname...">
             </div>
              <div class="form-row">
-                <input type="text" class="gj-textbox-md" id="Phone" placeholder="Phone...">
+                <input type="text" class="gj-textbox-md" id="Phone" placeholder="Phone..." maxlength="8">
             </div>
         </div>
         <div data-role="footer">
@@ -56,38 +56,45 @@
         function Edit(e) {
             $('#Id').val(e.data.id);
             $('#Name').val(e.data.record.Name);
+            $('#Surname').val(e.data.record.Surname);
+            $('#Phone').val(e.data.record.Phone);
             
             dialog.open('Edit User');
         }
         function Save() {
-            var record = {
-                ID: $('#ID').val(),
-                Name: $('#Name').val(),
-                CountryID: nationalityDropdown.value(),
-                DateOfBirth: gj.core.parseDate(dateOfBirth.value(), 'mm/dd/yyyy').toISOString(),
-                IsActive: $('#IsActive').prop('checked')
-            };
-
-            $.ajax({ url: 'AjaxProcess.aspx?method=CreateUser', data: { record: record }, method: 'POST' })
-                .done(function () {
+            $.ajax({
+                type: "POST",
+                url: "/AjaxProcess.aspx/SaveUser",
+                data: "{Id:'" + $('#Id').val() + "',Name:'" + $('#Name').val() + "',Surname:'" + $('#Surname').val() + "',Phone:'" + $('#Phone').val() + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    alert(result.d);
                     dialog.close();
                     grid.reload();
-                })
-                .fail(function (msg) {
-                    alert(msg);
-                    dialog.close();
-                });
+                },
+                failure: function (response) {
+                    alert(response.d);
+                }
+            });
         }
 
         function Delete(e) {
             if (confirm('Are you sure?')) {
-                $.ajax({ url: 'AjaxProcess.aspx?method=DeleteUser', data: { id: e.data.id }, method: 'POST' })
-                    .done(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/AjaxProcess.aspx/DeleteUser",
+                    data: '{Id: "' + e.data.id + '" }',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function(result) {
+                        alert(result.d);
                         grid.reload();
-                    })
-                    .fail(function (msg) {
-                        alert(msg);
-                    });
+                    },
+                    failure: function (response) {
+                        alert(response.d);
+                    }
+               });
             }
         }
 
@@ -102,7 +109,7 @@
                     { width: 64, tmpl: '<span class="material-icons gj-cursor-pointer">edit</span>', align: 'center', events: { 'click': Edit } },
                     { width: 64, tmpl: '<span class="material-icons gj-cursor-pointer">delete</span>', align: 'center', events: { 'click': Delete } }
                 ],
-                pager: { limit: 5 }
+                pager: { limit: 25 }
             });
             dialog = $('#dialog').dialog({
                 autoOpen: false,
