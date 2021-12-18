@@ -10,11 +10,6 @@ namespace Test1.Model
     [XmlRoot(ElementName = "Users")]
     public class UserCollection
     {
-        public UserCollection()
-        {
-            Users = new List<User>();
-        }
-
         [XmlElement(ElementName = "User")]
         public List<User> Users { get; set; }
     }

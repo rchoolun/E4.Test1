@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -16,20 +17,18 @@ namespace Test1.Business
         public Business()
         {
             data = new XmlDocument();
-            data.Load("App_Data/Data.xml");
+            data.Load(ConfigurationManager.AppSettings["Datasource"]);
         }
 
         /// <summary>
-        /// Returns a JSON string
+        /// Gets all users from XML and converts to a list of users
         /// </summary>
         /// <returns></returns>
         public UserCollection GetUsers()
         {
             try
             {
-                var userList = DeserializeToObject<UserCollection>("App_Data/Data.xml");
-
-                //var json = JsonConvert.SerializeXmlNode(data, Newtonsoft.Json.Formatting.None, true);
+                var userList = DeserializeToObject<UserCollection>(ConfigurationManager.AppSettings["Datasource"]);
                 return userList;
             }
             catch(Exception ex)
@@ -38,6 +37,11 @@ namespace Test1.Business
             }
         }
 
+        /// <summary>
+        /// Created a new user in the XML
+        /// </summary>
+        /// <param name="newUser"></param>
+        /// <returns></returns>
         public Status AddUser(User newUser)
         {
             try
@@ -45,7 +49,7 @@ namespace Test1.Business
                 XmlNode root1 = data.DocumentElement;
 
                 XmlElement XEle = data.CreateElement("User");
-                XEle.SetAttribute("Id", Guid.NewGuid().ToString());
+                XEle.SetAttribute("Id", newUser.Id.ToString());
                 XEle.SetAttribute("Name", newUser.Name);
                 XEle.SetAttribute("Surname", newUser.Surname);
                 XEle.SetAttribute("Phone", newUser.Phone);
@@ -60,6 +64,11 @@ namespace Test1.Business
             }
         }
 
+        /// <summary>
+        /// Update existing user in XML
+        /// </summary>
+        /// <param name="userToUpdate"></param>
+        /// <returns></returns>
         public Status UpdateUser(User userToUpdate)
         {
             try
@@ -83,6 +92,11 @@ namespace Test1.Business
             
         }
 
+        /// <summary>
+        /// Deletes the selected user from the XML file
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         public Status RemoveUser(string Id)
         {
             try
@@ -103,6 +117,12 @@ namespace Test1.Business
             }
         }
 
+        /// <summary>
+        /// Generic method to deserialize xml to object
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="filepath"></param>
+        /// <returns></returns>
         public T DeserializeToObject<T>(string filepath) where T : class
         {
             System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(T));
