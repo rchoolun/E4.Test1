@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Test1.Business;
 using Test1.Model;
 
-namespace UnitTestProject1
+namespace Test1.Test
 {
     [TestClass]
     public class UnitTest1
@@ -13,7 +13,7 @@ namespace UnitTestProject1
         {
             var user = new User() { Name = "Ravish", Surname = "Choolun", Phone = "58" };
 
-            var business = new Business();
+            var business = new Business.Business();
 
             var newUser = business.AddUser(user);
 
@@ -24,7 +24,7 @@ namespace UnitTestProject1
         [TestMethod]
         public void GetUsers()
         {
-            var business = new Business();
+            var business = new Business.Business();
 
             var userList = business.GetUsers();
 
@@ -36,7 +36,7 @@ namespace UnitTestProject1
         {
             var userUpdate = new User() { Id = new Guid("68c1aea2-2062-4237-9c43-86a7bb25c930"), Name = "Test", Surname = "TestSurnamessss", Phone = "123456789" };
 
-            var business = new Business();
+            var business = new Business.Business();
 
             var updateUser = business.UpdateUser(userUpdate);
 
@@ -46,7 +46,7 @@ namespace UnitTestProject1
         [TestMethod]
         public void RemoveUser()
         {
-            var business = new Business();
+            var business = new Business.Business();
 
             var removeUser = business.RemoveUser("78d55456-7aff-40f9-a658-9fd0dc0bc6a0");
 
